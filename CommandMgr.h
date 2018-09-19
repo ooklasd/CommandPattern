@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <list>
 #include <stack>
 #include <map>
@@ -28,7 +28,7 @@ namespace cmd
 
 		}
 
-		//Ö´ĞĞÄ³¸öÃüÁî£¬²¢´«Èë²ÎÊı
+		//æ‰§è¡ŒæŸä¸ªå‘½ä»¤ï¼Œå¹¶ä¼ å…¥å‚æ•°
 		virtual bool execute(const char* cmdName, const ArgType& arg, ArgType& result = ArgType())
 		{
 			_MgrTRYBEGIN_
@@ -38,7 +38,7 @@ namespace cmd
 			if (cmdName == nullptr)
 				throw CmdException(ERROR_CODE::noCommand);
 
-			//ÕÒµ½ÃüÁî
+			//æ‰¾åˆ°å‘½ä»¤
 			NewDeleteFunc newdeleteFunc;
 			{
 				std::lock_guard<std::mutex> l(CmdListMutex());
@@ -53,7 +53,7 @@ namespace cmd
 				}
 			}
 
-			//ĞÂ½¨ÃüÁî
+			//æ–°å»ºå‘½ä»¤
 			NewClassFunc& newFunc = newdeleteFunc.first;
 			DeleteClassFunc& deleteFunc = newdeleteFunc.second;
 			TCmd* curCmd = (TCmd*)newFunc();
@@ -68,7 +68,7 @@ namespace cmd
 
 			if (!isDone)
 			{
-				//ÈôÃ»ÓĞÍê³ÉÖ¸Áî£¬ÔòÉ¾³ıÖ¸Áî
+				//è‹¥æ²¡æœ‰å®ŒæˆæŒ‡ä»¤ï¼Œåˆ™åˆ é™¤æŒ‡ä»¤
 				deleteFunc(curCmd);
 				curCmd = nullptr;
 				return false;
@@ -76,14 +76,14 @@ namespace cmd
 
 			if (isDone && curCmd->isUndoable())
 			{
-				//Ö´ĞĞ²¢½øÈë¶ÓÁĞ
+				//æ‰§è¡Œå¹¶è¿›å…¥é˜Ÿåˆ—
 				_undoQueue.push_back(curCmd);
 				if (_undoQueue.size() > _maxQueueLen)
 				{
 					_undoQueue.pop_front();
 				}
 
-				//Çå¿ÕÖØ×ö¶ÓÁĞ
+				//æ¸…ç©ºé‡åšé˜Ÿåˆ—
 				while (!_redoQueue.empty())
 				{
 					_redoQueue.pop();
@@ -95,7 +95,7 @@ namespace cmd
 				deleteFunc(curCmd);
 				curCmd = nullptr;
 			}
-			//·µ»Ø½á¹û
+			//è¿”å›ç»“æœ
 			if(_executeAfterCall != nullptr)
 			_executeAfterCall(result);
 			return isDone;
@@ -105,7 +105,7 @@ namespace cmd
 			return false;
 		}
 			
-		//³·»ØÃüÁî
+		//æ’¤å›å‘½ä»¤
 		virtual void undo(size_t Step = 1)
 		{
 			_MgrTRYBEGIN_
@@ -123,7 +123,7 @@ namespace cmd
 			_MgrTRYEND_
 		}
 
-		//ÖØ×öÃüÁî
+		//é‡åšå‘½ä»¤
 		virtual void redo(size_t Step = 1)
 		{
 			_MgrTRYBEGIN_
@@ -150,11 +150,11 @@ namespace cmd
 			return true;
 		}
 
-		//»ñÈ¡/ÉèÖÃÖ´ĞĞ´íÎóº¯Êı
+		//è·å–/è®¾ç½®æ‰§è¡Œé”™è¯¯å‡½æ•°
 		const ErrorCallBack& getErrorCallFunc() const { return _errorCallFunc; }
 		virtual void setErrorCallFunc(ErrorCallBack val) { _errorCallFunc = std::move(val); }
 		
-		//»ñÈ¡/ÉèÖÃ³·»Ø¶ÓÁĞ×î´ó³¤¶È
+		//è·å–/è®¾ç½®æ’¤å›é˜Ÿåˆ—æœ€å¤§é•¿åº¦
 		const size_t& getMaxQueueLen() const { return _maxQueueLen; }
 		virtual void setMaxQueueLen(size_t val) { _maxQueueLen = std::move(val); }
 	
@@ -167,7 +167,9 @@ namespace cmd
 		
 		const std::function<void(const ArgType &)>& getExecuteAfterCall() const { return _executeAfterCall; }
 		virtual void setExecuteAfterCall(std::function<void(const ArgType &)> val) { _executeAfterCall = std::move(val); }
-	protected:
+        const std::stack<TCmd *>& getRedoQueue() const { return _redoQueue; }
+        const std::list<TCmd *>& getUndoQueue() const { return _undoQueue; }
+    protected:
 		virtual void setErrorCode(unsigned val) { _errorCode = std::move(val); }
 		virtual void setErrorMessage(std::string val) { _errorMessage = std::move(val); }
 		
@@ -185,18 +187,18 @@ namespace cmd
 		std::stack<TCmd*> _redoQueue;
 		std::list<TCmd*> _undoQueue;
 
-		size_t _maxQueueLen = 1000;//redoºÍundoÁ½¸ö¶ÓÁĞµÄºÍ
-		ErrorCallBack _errorCallFunc = nullptr;//·¢Éú´íÎóÊ±ºòµÄ
+		size_t _maxQueueLen = 1000;//redoå’Œundoä¸¤ä¸ªé˜Ÿåˆ—çš„å’Œ
+		ErrorCallBack _errorCallFunc = nullptr;//å‘ç”Ÿé”™è¯¯æ—¶å€™çš„
 
 		unsigned _errorCode;
 		std::string _errorMessage;
 
 		UserData* const _userData = nullptr;
 
-		//Ö´ĞĞÃüÁîÇ°
+		//æ‰§è¡Œå‘½ä»¤å‰
 		std::function<void(const ArgType&)> _executeBeforeCall;
 
-		//Ö´ĞĞÃüÁîºó
+		//æ‰§è¡Œå‘½ä»¤å
 		std::function<void(const ArgType&)> _executeAfterCall;
 	};
 }
