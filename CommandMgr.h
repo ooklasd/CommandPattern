@@ -6,21 +6,29 @@
 #include <mutex>
 #include "cmdexception.h"
 
-typedef void* (*NewClassFunc)();
+//typedef void(*NewClassFunc)(void*);
+//typedef void(*DeleteClassFunc)(void*);
+//typedef void(*ErrorCallBack)(void*);
 
-typedef void(*DeleteClassFunc)(void*);
+template<typename T>
+using NewClassFunc =  T* (*)();
 
-typedef void(*ErrorCallBack)(void*);
+template<typename T>
+using DeleteClassFunc = void (*)(T *);
+
+using ErrorCallBack = void(*)(void*);
 
 namespace cmd
 {
-	template<typename TCmd>
+	template<typename TTCmd>
 	class CommandMgr
 	{
 	public:
+        using TCmd = TTCmd;
 		typedef typename TCmd::ArgType ArgType;
 		typedef typename TCmd::UserData UserData;
-		typedef std::pair<NewClassFunc, DeleteClassFunc> NewDeleteFunc;
+        using ICommand = ICommand<ArgType, UserData>;
+		typedef std::pair<NewClassFunc<ICommand>, DeleteClassFunc<ICommand>> NewDeleteFunc;
 
 		CommandMgr(UserData* userData)
 			:_userData(userData)
@@ -54,9 +62,9 @@ namespace cmd
 			}
 
 			//新建命令
-			NewClassFunc& newFunc = newdeleteFunc.first;
-			DeleteClassFunc& deleteFunc = newdeleteFunc.second;
-			TCmd* curCmd = (TCmd*)newFunc();
+			auto& newFunc = newdeleteFunc.first;
+            auto& deleteFunc = newdeleteFunc.second;
+            ICommand* curCmd = newFunc();
 			if (curCmd == nullptr)
 			{
 				throw CmdException(ERROR_CODE::noCommand);
@@ -167,8 +175,8 @@ namespace cmd
 		
 		const std::function<void(const ArgType &)>& getExecuteAfterCall() const { return _executeAfterCall; }
 		virtual void setExecuteAfterCall(std::function<void(const ArgType &)> val) { _executeAfterCall = std::move(val); }
-        const std::stack<TCmd *>& getRedoQueue() const { return _redoQueue; }
-        const std::list<TCmd *>& getUndoQueue() const { return _undoQueue; }
+        const std::stack<ICommand *>& getRedoQueue() const { return _redoQueue; }
+        const std::list<ICommand *>& getUndoQueue() const { return _undoQueue; }
     protected:
 		virtual void setErrorCode(unsigned val) { _errorCode = std::move(val); }
 		virtual void setErrorMessage(std::string val) { _errorMessage = std::move(val); }
@@ -184,8 +192,8 @@ namespace cmd
 			return g_cmdListMutex; 
 		}
 
-		std::stack<TCmd*> _redoQueue;
-		std::list<TCmd*> _undoQueue;
+		std::stack<ICommand*> _redoQueue;
+		std::list<ICommand*> _undoQueue;
 
 		size_t _maxQueueLen = 1000;//redo和undo两个队列的和
 		ErrorCallBack _errorCallFunc = nullptr;//发生错误时候的

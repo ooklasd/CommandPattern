@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "export.h"
 namespace cmd
 {
@@ -29,11 +29,11 @@ namespace cmd
 		UserData* _userdata = nullptr;
 	};
 
-#define CommandMeta(cmd)\
+#define CommandMeta(cmdClass)\
 public:\
-	static void* NewClass() { return new cmd(); }\
-	static void DeleteClass(void* ptr) { delete (cmd*)ptr; }\
-	static const char* CommandName() { return #cmd; }\
+	static cmd::ICommand<cmdClass::ArgType,cmdClass::UserData>* NewClass() { return new cmdClass(); }\
+	static void DeleteClass(cmd::ICommand<cmdClass::ArgType,cmdClass::UserData>* ptr) { delete ptr; }\
+	static const char* CommandName() { return #cmdClass; }\
 	virtual const char* className() { return CommandName(); }
 
 

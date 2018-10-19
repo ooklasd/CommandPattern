@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "CommandMgr.h"
 namespace cmd
 {
@@ -8,7 +8,7 @@ namespace cmd
 	public:
 		CmdRegister()
 		{
-			TCommandMgr::Register(Tcmd::CommandName(), { (NewClassFunc)&Tcmd::NewClass,(DeleteClassFunc)&Tcmd::DeleteClass});
+            TCommandMgr::Register(Tcmd::CommandName(), std::make_pair(&Tcmd::NewClass,&Tcmd::DeleteClass ));
 		}
 	};
 }
