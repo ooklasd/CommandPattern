@@ -74,35 +74,44 @@ namespace cmd
 			bool isDone = curCmd->doit(arg);
 			curCmd->getResult(result);
 
-			if (!isDone)
+			if (curCmd->isUndoable())
 			{
-				//若没有完成指令，则删除指令
+                if (isDone)
+                {
+                    //执行并进入队列
+                    _undoQueue.push_back(curCmd);
+                    if (_undoQueue.size() > _maxQueueLen)
+                    {
+                        _undoQueue.pop_front();
+                    }
+
+                    //清空重做队列
+                    while (!_redoQueue.empty())
+                    {
+                        _redoQueue.pop();
+                    }
+                }
+                else
+                {
+                    //执行失败，则尝试还原
+                    curCmd->undo();
+                }
+				
+			}
+            else
+			{
 				deleteFunc(curCmd);
 				curCmd = nullptr;
-				return false;
 			}
 
-			if (isDone && curCmd->isUndoable())
-			{
-				//执行并进入队列
-				_undoQueue.push_back(curCmd);
-				if (_undoQueue.size() > _maxQueueLen)
-				{
-					_undoQueue.pop_front();
-				}
+            if (!isDone)
+            {
+                //若没有完成指令，则删除指令
+                deleteFunc(curCmd);
+                curCmd = nullptr;
+                return false;
+            }
 
-				//清空重做队列
-				while (!_redoQueue.empty())
-				{
-					_redoQueue.pop();
-				}
-			}
-
-			if (curCmd->isUndoable() == false)
-			{
-				deleteFunc(curCmd);
-				curCmd = nullptr;
-			}
 			//返回结果
 			if(_executeAfterCall != nullptr)
 			_executeAfterCall(result);
