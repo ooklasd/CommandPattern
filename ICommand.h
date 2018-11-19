@@ -21,8 +21,7 @@ namespace cmd
 		/*static ICommand* NewClass() { return nullptr; }*/
 		static void DeleteClass(ICommand* c) { delete c; }
 
-		const UserData* getUserdata() const { return _userdata; }
-		UserData* getUserdata(){ return _userdata; }
+		UserData* getUserdata()const{ return _userdata; }
 		virtual void setUserdata(UserData* val) { _userdata = std::move(val); }
 
 	protected:
