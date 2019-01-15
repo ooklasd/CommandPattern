@@ -190,6 +190,11 @@ namespace cmd
 		virtual void setExecuteAfterCall(std::function<void(const ArgType &)> val) { _executeAfterCall = std::move(val); }
         const std::stack<ICommand *>& getRedoQueue() const { return _redoQueue; }
         const std::list<ICommand *>& getUndoQueue() const { return _undoQueue; }
+
+        std::unique_lock<std::recursive_mutex> lock() {
+            return std::unique_lock<std::recursive_mutex>(_mutex);
+        }
+
     protected:
 		virtual void setErrorCode(unsigned val) { _errorCode = std::move(val); }
 		virtual void setErrorMessage(std::string val) { _errorMessage = std::move(val); }
@@ -205,6 +210,7 @@ namespace cmd
 			return g_cmdListMutex; 
 		}
 
+        std::recursive_mutex _mutex;
 		std::stack<ICommand*> _redoQueue;
 		std::list<ICommand*> _undoQueue;
 

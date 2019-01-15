@@ -13,10 +13,12 @@ namespace cmd
 		const cmd::ERROR_CODE& getCode() const { return _code; }
 	protected:
 		ERROR_CODE _code;
-	};
+    };
 
 
-#define _MgrTRYBEGIN_ try{
+    
+#define _MgrTRYBEGIN_ auto lockMgr = lock();\
+                        try{ 
 
 #define _MgrTRYEND_ }\
 	catch (CmdException& e)\
