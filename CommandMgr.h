@@ -5,7 +5,6 @@
 #include "ICommand.h"
 #include <mutex>
 #include "cmdexception.h"
-#include "CMDNotify.h"
 
 //typedef void(*NewClassFunc)(void*);
 //typedef void(*DeleteClassFunc)(void*);
@@ -29,8 +28,6 @@ namespace cmd
 		typedef typename TCmd::ArgType ArgType;
 		typedef typename TCmd::UserData UserData;
         using ICommand = ICommand<ArgType, UserData>;
-        using CMDNotify = CMDNotify<TTCmd>;
-
 		typedef std::pair<NewClassFunc<ICommand>, DeleteClassFunc<ICommand>> NewDeleteFunc;
 
 		CommandMgr(UserData* userData)
@@ -80,15 +77,12 @@ namespace cmd
 
                 isDone = curCmd->doit(arg);
                 curCmd->getResult(result);
-
-                notify("::doit", curCmd);
             }
             catch (...)
             {
                 if (curCmd->isUndoable())
                 {
                     curCmd->undo();
-                    notify("::undo", curCmd);
                 }
                 throw;
             }
@@ -143,11 +137,10 @@ namespace cmd
 				{
 					auto curCmd = _undoQueue.back();
 					curCmd->undo();
-                    _undoQueue.pop_back();
+					_undoQueue.pop_back();
 					_redoQueue.push(curCmd);
 					--Step;
-                    notify("::undo", curCmd);
-                }
+				}
 			_MgrTRYEND_
 		}
 
@@ -165,8 +158,7 @@ namespace cmd
 						_redoQueue.pop();
 						_undoQueue.push_back(curCmd);
 						--Step;
-                        notify("::redo",curCmd);
-                    }
+					}
 			_MgrTRYEND_
 		}
 
@@ -203,18 +195,10 @@ namespace cmd
             return std::unique_lock<std::recursive_mutex>(_mutex);
         }
 
-        CMDNotify* getCMDNotify() const { return _CMDNotify.get(); }
-        CMDNotify* getOrCreateCMDNotify() { 
-            if (_CMDNotify == nullptr)
-                _CMDNotify.reset(new CMDNotify());
-            return getCMDNotify();
-        }
-        void setCMDNotify(CMDNotify* val) { _CMDNotify.reset(val); }
     protected:
 		virtual void setErrorCode(unsigned val) { _errorCode = std::move(val); }
 		virtual void setErrorMessage(std::string val) { _errorMessage = std::move(val); }
-        void notify(std::string actionString,const ICommand* pcmd);
-
+		
 		typedef std::map<std::string, NewDeleteFunc> CommandMap;
 
 		static CommandMap& CmdMap() {
@@ -243,17 +227,5 @@ namespace cmd
 
 		//执行命令后
 		std::function<void(const ArgType&)> _executeAfterCall;
-
-        std::unique_ptr<CMDNotify> _CMDNotify = nullptr;
 	};
-
-    template<typename TTCmd>
-    void cmd::CommandMgr<TTCmd>::notify(std::string actionString, const ICommand* pcmd)
-    {
-        auto pcmdtemp = dynamic_cast<const TTCmd*>(pcmd);
-        if (pcmdtemp == nullptr) return;
-        actionString = std::string(pcmdtemp->className())+ actionString;
-        getOrCreateCMDNotify()->notify(actionString, pcmdtemp);
-    }
-
 }

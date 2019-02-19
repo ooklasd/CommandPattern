@@ -15,7 +15,7 @@ namespace cmd
 		virtual void undo() = 0;
 		virtual void redo() = 0;
 		virtual bool isUndoable() = 0;
-		virtual const char* className()const = 0;
+		virtual const char* className() = 0;
 		virtual void getResult(ArgType&) = 0;
 
 		/*static ICommand* NewClass() { return nullptr; }*/
@@ -33,7 +33,7 @@ public:\
 	static cmd::ICommand<cmdClass::ArgType,cmdClass::UserData>* NewClass() { return new cmdClass(); }\
 	static void DeleteClass(cmd::ICommand<cmdClass::ArgType,cmdClass::UserData>* ptr) { delete ptr; }\
 	static const char* CommandName() { return #cmdClass; }\
-	virtual const char* className()const { return CommandName(); }
+	virtual const char* className() { return CommandName(); }
 
 
 	//template<typename TArgType, typename TUserData = void>
