@@ -15,7 +15,7 @@ namespace cmd
 		virtual void undo() = 0;
 		virtual void redo() = 0;
 		virtual bool isUndoable() = 0;
-		virtual const char* className() = 0;
+		virtual const char* className() const = 0;
 		virtual void getResult(ArgType&) = 0;
 
 		/*static ICommand* NewClass() { return nullptr; }*/

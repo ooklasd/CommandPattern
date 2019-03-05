@@ -30,6 +30,9 @@ namespace cmd
         using ICommand = ICommand<ArgType, UserData>;
 		typedef std::pair<NewClassFunc<ICommand>, DeleteClassFunc<ICommand>> NewDeleteFunc;
 
+        using ErrorCallBack = std::function<void(CommandMgr<TTCmd>*)>;
+
+
 		CommandMgr(UserData* userData)
 			:_userData(userData)
 		{
