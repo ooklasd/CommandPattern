@@ -8,7 +8,7 @@ namespace cmd
 	class CmdException :public std::exception
 	{
 	public:
-		CmdException(ERROR_CODE code) :_code(code) {}
+		CmdException(ERROR_CODE code) :std::exception(code._to_string()),_code(code) {}
 
 		const cmd::ERROR_CODE& getCode() const { return _code; }
 	protected:

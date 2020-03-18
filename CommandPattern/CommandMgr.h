@@ -18,7 +18,7 @@ template<typename T>
 using DeleteClassFunc = void (*)(T *);
 
 using ErrorCallBack = void(*)(void*);
-
+// #define COMMAND_MANAGER_LIST_LOCK
 namespace cmd
 {
 	template<typename TTCmd>
@@ -55,7 +55,9 @@ namespace cmd
 			//找到命令
 			NewDeleteFunc newdeleteFunc;
 			{
+#ifdef COMMAND_MANAGER_LIST_LOCK
 				std::lock_guard<std::mutex> l(CmdListMutex());
+#endif // COMMAND_MANAGER_LIST_LOCK
 				auto itf = CmdMap().find(cmdName);
 				if (itf == CmdMap().end())
 				{
