@@ -32,8 +32,6 @@ namespace cmd
 		typedef std::pair<NewClassFunc<ICommand>, DeleteClassFunc<ICommand>> NewDeleteFunc;
 
 		using ErrorCallBack = std::function<void(CommandMgr<TTCmd>*)>;
-		using CancelCallBack = std::function<bool()>;
-
 
 		CommandMgr(UserData* userData)
 			:_userData(userData)
@@ -45,7 +43,7 @@ namespace cmd
 		virtual bool execute(const char* cmdName, const ArgType& arg, ArgType& result) {
 			return execute(cmdName,arg,result,nullptr);
 		}
-		virtual bool execute(const char* cmdName, const ArgType& arg, ArgType& result, CancelCallBack cancelCall)
+		virtual bool execute(const char* cmdName, const ArgType& arg, ArgType& result, std::function<bool()> cancelCall)
 		{
 			_MgrTRYBEGIN_
 				if (_executeBeforeCall != nullptr)
@@ -204,9 +202,6 @@ namespace cmd
         std::unique_lock<std::recursive_mutex> lock() {
             return std::unique_lock<std::recursive_mutex>(_mutex);
         }
-
-		std::function<bool()> getIsCancelCall() const { return _isCancelCall; }
-		void setIsCancelCall(std::function<bool()> val) { _isCancelCall = std::move(val); }
 	protected:
 		virtual void setErrorCode(unsigned val) { _errorCode = std::move(val); }
 		virtual void setErrorMessage(std::string val) { _errorMessage = std::move(val); }
@@ -239,9 +234,5 @@ namespace cmd
 
 		//执行命令后
 		std::function<void(const ArgType&)> _executeAfterCall;
-
-		//获取是否取消回调
-		std::function<bool()> _isCancelCall;
-
 	};
 }
