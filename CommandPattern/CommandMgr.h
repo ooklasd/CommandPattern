@@ -5,6 +5,7 @@
 #include "ICommand.h"
 #include <mutex>
 #include "cmdexception.h"
+#include <functional>
 
 //typedef void(*NewClassFunc)(void*);
 //typedef void(*DeleteClassFunc)(void*);

@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include "export.h"
 namespace cmd
 {
 	template<typename TArgType,typename TUserData = void>
@@ -33,7 +32,7 @@ public:\
 	static cmd::ICommand<cmdClass::ArgType,cmdClass::UserData>* NewClass() { return new cmdClass(); }\
 	static void DeleteClass(cmd::ICommand<cmdClass::ArgType,cmdClass::UserData>* ptr) { delete ptr; }\
 	static const char* CommandName() { return #cmdClass; }\
-	virtual const char* className() { return CommandName(); }
+	virtual const char* className()const { return CommandName(); }
 
 
 	//template<typename TArgType, typename TUserData = void>

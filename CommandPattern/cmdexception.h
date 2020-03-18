@@ -2,7 +2,7 @@
 #include "enum\enum.h"
 namespace cmd
 {
-	BETTER_ENUM(ERROR_CODE,int, unknown,good, noCommand, noRedo, noUndo);
+	BETTER_ENUM(ERROR_CODE,int, unknown,Good, noCommand, noRedo, noUndo);
 	
 
 	class CmdException :public std::exception
