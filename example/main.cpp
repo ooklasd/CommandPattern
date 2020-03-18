@@ -10,5 +10,4 @@ int main()
 	CommandArg arg,returnData;
 	arg["file"] = "XXX";
 	return !cmd->execute("TestCMD", arg, returnData);
-
 }

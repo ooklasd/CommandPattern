@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <functional>
 namespace cmd
 {
 	template<typename TArgType,typename TUserData = void>
@@ -16,6 +17,7 @@ namespace cmd
 		virtual bool isUndoable() = 0;
 		virtual const char* className() const = 0;
 		virtual void getResult(ArgType&) = 0;
+		virtual bool isCancel() {return _isCancelFunction ? _isCancelFunction(): false;}
 
 		/*static ICommand* NewClass() { return nullptr; }*/
 		static void DeleteClass(ICommand* c) { delete c; }
@@ -23,8 +25,11 @@ namespace cmd
 		UserData* getUserdata()const{ return _userdata; }
 		virtual void setUserdata(UserData* val) { _userdata = std::move(val); }
 
+		std::function<bool()> getIsCancelFunction() const { return _isCancelFunction; }
+		void setIsCancelFunction(std::function<bool()> val) { _isCancelFunction = std::move(val); }
 	protected:
 		UserData* _userdata = nullptr;
+		std::function<bool()> _isCancelFunction;
 	};
 
 #define CommandMeta(cmdClass)\
